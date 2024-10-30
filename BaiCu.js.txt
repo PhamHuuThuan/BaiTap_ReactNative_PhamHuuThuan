@@ -1,0 +1,111 @@
+import React, {useState, useEffect, useCallback} from 'react';
+import { Text, SafeAreaView, StyleSheet, Image, View, TextInput, Pressable, FlatList} from 'react-native';
+import { NavigationContainer, useFocusEffect} from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+const Screen02 = () => {
+  const {name} = "Thuan";
+  const [workList, setWorkList] = useState([]);
+  const [filteredList, setFilteredList] = useState([]);
+  const [searhText, setSearchText] = useState("");
+  const loadList = ()=>{
+    fetch('https://api.mockfly.dev/mocks/dc3b614f-8950-4616-8e47-5c81a3e46d64/ToDoList',{
+      method: 'GET'
+    })
+    .then(res=>{
+      return res.json();
+    }).then(res=>{
+      setWorkList(res);
+    }).catch(err=>{
+      console.log(err);
+    })
+  }
+  // Sử dụng useFocusEffect để gọi API mỗi khi màn hình được focus
+  useFocusEffect(
+    useCallback(() => {
+      loadList(); // Gọi API để tải lại dữ liệu khi màn hình được focus
+
+      return () => {
+        // Cleanup nếu cần khi màn hình mất focus
+      };
+    }, []) // Mảng rỗng để chỉ chạy khi focus
+  );
+
+  useEffect(()=>{
+    setFilteredList(workList.filter(item=>item.workname.toLowerCase().includes(searhText.toLowerCase())));
+  },[searhText, workList]);
+
+  const Item = ({item})=>{
+    return (
+        <View style={{width: '90%', height: 50,backgroundColor: 'lightgray', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', paddingLeft: 20,paddingRight: 20, borderRadius: 30,
+        marginBottom: 20}}>
+          <Image source={{uri: 'https://snack-code-uploads.s3.us-west-1.amazonaws.com/~asset/c38d74598c0b3e67b3ab2e7d5b55e5a5'}} style={{width: 24, height: 24}}/>
+          <Text style={{width: '80%', fontWeight: 'bold', fontSize: 17}}>{item.workname}</Text>
+          <Pressable onPress={()=>{navigation.navigate('Screen03', {isAdd: false, item, name})}}>
+            <Image source={{uri: 'https://snack-code-uploads.s3.us-west-1.amazonaws.com/~asset/4d3cd94e4d32c87de17f90babad40f87'}} style={{width: 24, height: 24}}/>
+          </Pressable>
+        </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={{flexDirection: 'row', width: '90%', justifyContent: 'space-between', marginTop: 20}}>
+        <Pressable onPress={()=>navigation.navigate('Screen01')}>
+          <Image source={{uri: 'https://snack-code-uploads.s3.us-west-1.amazonaws.com/~asset/cfb5b067658032fd1870f734369d041b'}}style={{width: 36, height: 36}}/>
+        </Pressable>
+        <View style={{flexDirection: 'row'}}>
+          <Image source={{uri: 'https://snack-code-uploads.s3.us-west-1.amazonaws.com/~asset/1e56b0d9da173efc560ae741f025d2f1'}}style={{width: 50, height: 50}}/>
+          <View style={{justifyContent: 'center', marginLeft: 20}}>
+            <Text style={{fontSize: 20, fontWeight: 'bold'}}>Hi {name}</Text>
+            <Text style={{fontWeight: 'bold', color: 'gray'}}>Have a great day a head</Text>
+          </View>
+        </View>
+      </View>
+      <View style={{width: '90%', height: 50, borderWidth: 1, borderRadius: 5, paddingLeft: 10, flexDirection: 'row', alignItems:'center' , marginTop: 20}}>
+        <Pressable>
+          <Image source={{uri: 'https://snack-code-uploads.s3.us-west-1.amazonaws.com/~asset/521740a6d006bd5f58a933046126a6e3'}}style={{width: 24, height: 24}}/>
+        </Pressable>
+        <TextInput style={{width: '90%', height: 50, fontSize: 20, marginLeft: 10, paddingLeft: 10, color: 'gray'}}
+        placeholder="Search"
+        value={searhText}
+        onChangeText={setSearchText}/>
+      </View>
+      <View style={{flex: 1, marginTop: 50, alignItems: 'center'}}>
+          <FlatList 
+          data={filteredList}
+          renderItem={({item})=><Item item={item}/>}
+          numColumns={1}
+          style={{width: 400}}
+          />
+          <Pressable style={{backgroundColor: 'lightblue', width: 80, height: 80, borderRadius: 100, justifyContent: 'center', alignItems: 'center', marginTop: 30}}
+          onPress={()=>{navigation.navigate('Screen03', {isAdd: true})}}>
+            <Image source={{uri: 'https://snack-code-uploads.s3.us-west-1.amazonaws.com/~asset/1598ad4cf44fb72ec6911e904f00b5ee'}} style={{width: 48, height: 48}}/>
+          </Pressable>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const Stack = createNativeStackNavigator();
+export default function App() {
+  return (
+    <NavigationContainer independent={true}>
+      <Stack.Navigator initialRouteName={"Screen02"}>
+        <Stack.Screen 
+        name = "Screen02" 
+        component = {Screen02}
+        options={{headerShown: false}}/>
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingLeft: 20,
+  }
+});
